@@ -35,14 +35,14 @@ def _set_properties(device_widget: DeviceWidget):
     device_widget.set_properties(margin_top=6, margin_bottom=6, margin_start=6, margin_end=6, hexpand=True, vexpand=True)
     device_widget.nick_label.set_properties(
         wrap=True,
-        wrap_mode=Pango.WrapMode.WORD_CHAR,
+        wrap_mode=Pango.WrapMode.WORD,
         justify=Gtk.Justification.CENTER,
         hexpand=True,
     )
     device_widget.description_label.set_properties(
         ellipsize=Pango.EllipsizeMode.NONE,
         wrap=True,
-        wrap_mode=Pango.WrapMode.WORD_CHAR,
+        wrap_mode=Pango.WrapMode.WORD,
         justify=Gtk.Justification.CENTER,
         hexpand=True,
     )
@@ -78,7 +78,7 @@ def arrange_widgets(device_widget: DeviceWidget):
 
     main_container = Gtk.Box(
         orientation=Gtk.Orientation.HORIZONTAL,
-        halign=Gtk.Align.CENTER,
+        halign=Gtk.Align.FILL,
         hexpand=True,
         vexpand=True,
         spacing=10,

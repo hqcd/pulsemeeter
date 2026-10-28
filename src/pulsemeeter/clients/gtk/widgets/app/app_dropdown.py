@@ -58,7 +58,7 @@ class AppDropDown(Gtk.DropDown):
         label = Gtk.Label(
             xalign=0.0,
             wrap=True,
-            wrap_mode=Pango.WrapMode.WORD_CHAR,
+            wrap_mode=Pango.WrapMode.WORD,
             hexpand=True,
         )
         list_item.set_child(label)

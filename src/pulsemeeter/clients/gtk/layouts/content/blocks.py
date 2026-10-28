@@ -34,7 +34,7 @@ class DeviceBox(Gtk.Frame):
             label=label,
             halign=Gtk.Align.CENTER,
             wrap=True,
-            wrap_mode=Pango.WrapMode.WORD_CHAR,
+            wrap_mode=Pango.WrapMode.WORD,
             justify=Gtk.Justification.CENTER,
             margin_bottom=6,
             margin_top=6,

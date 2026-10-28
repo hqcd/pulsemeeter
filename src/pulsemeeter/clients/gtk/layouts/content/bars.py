@@ -35,7 +35,7 @@ class DeviceBox(Gtk.Frame):
             margin_bottom=5,
             halign=Gtk.Align.CENTER,
             wrap=True,
-            wrap_mode=Pango.WrapMode.WORD_CHAR,
+            wrap_mode=Pango.WrapMode.WORD,
             justify=Gtk.Justification.CENTER,
         )
         if tooltip is not None:

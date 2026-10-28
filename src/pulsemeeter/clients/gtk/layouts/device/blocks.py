@@ -34,13 +34,13 @@ def arrange_widgets(device_widget: DeviceWidget):
 
     device_widget.nick_label.set_properties(
         wrap=True,
-        wrap_mode=Pango.WrapMode.WORD_CHAR,
+        wrap_mode=Pango.WrapMode.WORD,
         hexpand=True,
         xalign=0.0,
     )
     device_widget.description_label.set_properties(
         wrap=True,
-        wrap_mode=Pango.WrapMode.WORD_CHAR,
+        wrap_mode=Pango.WrapMode.WORD,
         hexpand=True,
         xalign=0.0,
     )

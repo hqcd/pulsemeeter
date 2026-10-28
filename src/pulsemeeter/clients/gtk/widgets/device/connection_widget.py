@@ -44,7 +44,7 @@ class ConnectionWidget(Gtk.Box):
         toggle_content.append(self.toggle_group_icon)
         self.label_widget = Gtk.Label(label=label)
         self.label_widget.set_wrap(True)
-        self.label_widget.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
+        self.label_widget.set_wrap_mode(Pango.WrapMode.WORD)
         self.label_widget.set_justify(Gtk.Justification.CENTER)
         self.label_widget.set_hexpand(True)
         toggle_content.append(self.label_widget)

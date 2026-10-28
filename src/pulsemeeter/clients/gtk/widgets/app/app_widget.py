@@ -38,7 +38,7 @@ class AppWidget(Gtk.Frame):
         self.label = Gtk.Label()
         self.label.set_markup(f'<b>{GLib.markup_escape_text(self.app_model.label)}</b>')
         self.label.set_wrap(True)
-        self.label.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
+        self.label.set_wrap_mode(Pango.WrapMode.WORD)
         self.label.set_hexpand(True)
         self.label.set_xalign(0.0)
         self.icon = IconWidget(app_model.icon)

@@ -5,7 +5,7 @@ from pulsemeeter.model.types import DEVICE_TYPE_PRETTY as PRETTY
 # pylint: disable=wrong-import-order,wrong-import-position
 import gi
 gi.require_version('Gtk', '4.0')
-from gi.repository import Gtk  # noqa: E402
+from gi.repository import Gtk, Pango  # noqa: E402
 # pylint: enable=wrong-import-order,wrong-import-position
 
 _ = gettext.gettext
@@ -17,6 +17,7 @@ def _wrap_switcher_labels(switcher):
         label = child.get_first_child()
         if isinstance(label, Gtk.Label):
             label.set_wrap(True)
+            label.set_wrap_mode(Pango.WrapMode.WORD)
             label.set_justify(Gtk.Justification.CENTER)
         child = child.get_next_sibling()
 

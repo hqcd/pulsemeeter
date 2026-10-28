@@ -33,7 +33,7 @@ def arrange_widgets(app_widget: AppWidget):
     )
     app_widget.label.set_properties(
         wrap=True,
-        wrap_mode=Pango.WrapMode.WORD_CHAR,
+        wrap_mode=Pango.WrapMode.WORD,
         justify=Gtk.Justification.CENTER,
         hexpand=True,
     )

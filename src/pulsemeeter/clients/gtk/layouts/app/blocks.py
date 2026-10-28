@@ -30,7 +30,7 @@ def _set_properties(app_widget: AppWidget):
     )
     app_widget.label.set_properties(
         wrap=True,
-        wrap_mode=Pango.WrapMode.WORD_CHAR,
+        wrap_mode=Pango.WrapMode.WORD,
         hexpand=True,
         xalign=0.0,
     )
