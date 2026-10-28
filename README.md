@@ -1,32 +1,100 @@
-# Pulsemeeter
+# Pulsemeeter (Enhanced Fork)
 
-A frontend to ease the use of pulseaudio's routing capabilities, much like voicemeeter's workflow
+A frontend to ease the use of PulseAudio / PipeWire's routing capabilities, much like Voicemeeter's workflow — enhanced with custom theming, exclusive routing toggles, keyboard shortcuts, category visibility controls, and a responsive layout.
 
-[![translated](https://hosted.weblate.org/widget/pulsemeeter/pulsemeeter/svg-badge.svg)](https://hosted.weblate.org/projects/pulsemeeter/pulsemeeter/)
-[![pypi](https://img.shields.io/pypi/v/pulsemeeter)](https://pypi.org/project/pulsemeeter/)
-[![AUR](https://img.shields.io/aur/version/pulsemeeter?label=AUR-stable&color=cyan)](https://aur.archlinux.org/packages/pulsemeeter/)
-[![AUR](https://img.shields.io/aur/version/pulsemeeter-git?label=AUR-git&color=red)](https://aur.archlinux.org/packages/pulsemeeter-git/)
-[![Discord](https://img.shields.io/badge/chat-Discord-lightgrey)](https://discord.gg/ekWt9NuEWv)
+> **Built with AI:** This fork was developed using **Gemini 4 Argon** and **Antigravity**.
+
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
-[![Donate](https://img.shields.io/badge/donate-PayPal-green.svg)](https://www.paypal.com/donate/?hosted_button_id=6DSVJ3V3RCVT8)
-[![Donate](https://img.shields.io/badge/donate-Patreon-yellow.svg)](https://www.patreon.com/theRealCarneiro)
+[![Upstream](https://img.shields.io/badge/upstream-theRealCarneiro%2Fpulsemeeter-purple)](https://github.com/theRealCarneiro/pulsemeeter)
 
-### Wiki: \[[Installation](https://github.com/theRealCarneiro/pulsemeeter/wiki/Installation)\] \[[How to use](https://github.com/theRealCarneiro/pulsemeeter/wiki/How-to-use)\]
+---
 
-![](https://github.com/user-attachments/assets/19e06982-6c91-4c13-97c0-8b3b8ab173c5)
+## New Features in This Fork
 
-<!--(This screenshot was taken while using ant dracula gtk theme, it will use your theme)-->
+### 1. Hide / Show Input & Output Categories
+- Toggle visibility of individual device and stream categories directly from the **Settings Menu** (`Visible Categories`):
+  - **Hardware Inputs** (`hi`)
+  - **Virtual Inputs** (`vi`)
+  - **Hardware Outputs** (`a`)
+  - **Virtual Outputs** (`b`)
+  - **Application Outputs** (`sink_input`)
+  - **Application Inputs** (`source_output`)
 
-# Features
+### 2. Exclusive Output Toggle Groups
+- Right-click any output routing button (`A1`, `A2`, `B1`, etc.) on an input device and enable **Exclusive toggle group**.
+- Activating one output in the group automatically disables all other outputs in that input's exclusive toggle group (ideal for switching between Speakers and Headphones with a single click).
+- **CLI Support**: Cycle through an input's exclusive toggle group from scripts or system hotkeys:
+  ```bash
+  pulsemeeter toggle-group vi 1
+  ```
+
+### 3. Exclusive Hardware Input to Virtual Output Routing
+- For **Hardware Inputs (`hi`)** routing to **Virtual Outputs (`b`)**, right-click the virtual output button (`B1`, etc.) and enable **Exclusive hardware input to this virtual output**.
+- Routing `Hardware Input 1` to `Virtual Output 1` automatically disables routing from `Hardware Input 2` (and any other hardware inputs) to `Virtual Output 1`, and vice versa.
+
+### 4. Per-Input Output Visibility (Hide Individual Output Buttons)
+- Right-click any output routing button on a Hardware or Virtual Input and check **Hide output button** to declutter outputs you don't route that input to.
+- Easily re-enable hidden output buttons at any time via the input device's **Settings Menu** (`Visible Outputs`).
+
+### 5. Keyboard Shortcuts for Output Toggling & Group Cycling
+- Bind custom keyboard shortcuts to:
+  - **Individual output routes**: Right-click an output button (`A1`, `B1`, etc.) -> click **Shortcut** -> press your key combination.
+  - **Cycle exclusive toggle group**: Open an input device's **Settings Menu** -> click **Cycle Toggle Group Shortcut** -> press your key combination.
+- Supports both **XDG Desktop Portal `GlobalShortcuts`** (Wayland/X11 desktop-wide shortcuts) and window-level GTK4 shortcut capture.
+
+### 6. Custom Theming Engine with Color Pickers & Translucent Backgrounds
+- Customize the look and feel of Pulsemeeter live from the **Settings Menu** (`Theme` section):
+  - **Background Mode**: Choose between **Solid**, **Linear Gradient** (with configurable gradient angle from `0°` to `360°`), or **Translucent** (allowing your desktop wallpaper to show through).
+  - **Background Opacity Slider**: Fine-tune background transparency (`0.05` – `1.00`).
+  - **Full RGBA Color Pickers**: Customize Primary Background, Gradient End, Card Background (with alpha), Accent Color, and Text Color with instant live preview.
+
+### 7. Scroll Wheel Volume Control Toggle
+- Enable or disable adjusting volume sliders with the mouse scroll wheel via **Enable scroll wheel on volume sliders** in the **Settings Menu** to prevent accidental volume changes while scrolling.
+
+### 8. Responsive Scaling & Multi-Line Text Wrapping
+- **Dynamic Card Scaling**: Category containers, device cards, application cards, and routing buttons scale cleanly based on the window size across `Blocks`, `Bars`, and `Tabbed` layouts.
+- **Multi-Line Label Wrapping**: Long input/output source names, device descriptions, routing button labels, and application stream dropdowns wrap cleanly onto the next line instead of clipping or locking the window width.
+
+---
+
+## Core Pulsemeeter Features
 - Create virtual inputs and outputs
 - Route audio from input devices to output devices, either hardware or virtual
-- Volume and mute control
-- Channel layout for virtual devices (mono, stereo, etc.)
-- Port selection for hardware devices (choose which channels of a hardware device should be active)
-- Custom port-to-port connection mapping
+- Per-device and per-route (`pw-loopback`) volume and mute control
+- Channel layout for virtual devices (mono, stereo, surround, etc.)
+- Port selection for hardware devices and custom port-to-port connection mapping
+- Real-time VU level meters
 
-# Installation
-Please visit the [wiki](https://github.com/theRealCarneiro/pulsemeeter/wiki/Installation) for in depth information on how to install.
+---
 
-# Discord Server
-If you want to get updates about new features, patches or leave some sugestions, join our [discord server](https://discord.gg/ekWt9NuEWv)
+## Installation & Running from Source
+
+### Dependencies
+- Python 3.10+
+- PyGObject (`Gtk 4.0`, `Pango 1.0`)
+- `pydantic`
+- `pulsectl` & `pulsectl-asyncio`
+- PipeWire (`pw-link`, `pw-loopback`, `pactl`) / PulseAudio
+
+### Run Directly from Source
+```bash
+git clone git@github.com:hqcd/pulsemeeter.git
+cd pulsemeeter
+PYTHONPATH=src python3 -m pulsemeeter
+```
+
+### Install with `pip`
+```bash
+pip install .
+```
+
+### Run Unit Tests
+```bash
+PYTHONPATH=src python3 -m unittest discover -s tests/unit -p "*_test.py"
+```
+
+---
+
+## Upstream Wiki & Credits
+- Original project by [theRealCarneiro](https://github.com/theRealCarneiro/pulsemeeter) — see the upstream [Installation Wiki](https://github.com/theRealCarneiro/pulsemeeter/wiki/Installation) and [Usage Guide](https://github.com/theRealCarneiro/pulsemeeter/wiki/How-to-use).
+- Fork enhancements developed using **Gemini 4 Argon** and **Antigravity**.
