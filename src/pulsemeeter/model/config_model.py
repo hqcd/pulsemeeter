@@ -1,6 +1,6 @@
 import logging
 
-from pydantic import BaseModel, root_validator, validator
+from pydantic import BaseModel, Field, root_validator, validator
 from pulsemeeter.model.device_model import DeviceModel
 from pulsemeeter.model.connection_model import ConnectionModel
 
@@ -10,6 +10,25 @@ DEVICE_TYPES = ('vi', 'hi', 'a', 'b')
 INPUT_TYPES = ('vi', 'hi')
 OUTPUT_TYPES = ('a', 'b')
 VIRTUAL_TYPES = ('vi', 'b')
+CATEGORY_KEYS = ('hi', 'vi', 'a', 'b', 'sink_input', 'source_output')
+
+
+def _default_visible_categories():
+    return {key: True for key in CATEGORY_KEYS}
+
+
+def _default_theme():
+    return {
+        'enabled': False,
+        'bg_mode': 'solid',  # 'solid', 'gradient', 'translucent'
+        'bg_color': 'rgba(30, 30, 46, 1.0)',
+        'bg_gradient_end': 'rgba(17, 17, 27, 1.0)',
+        'bg_gradient_angle': 135,
+        'bg_opacity': 0.85,
+        'card_color': 'rgba(49, 50, 68, 0.85)',
+        'accent_color': 'rgba(137, 180, 250, 1.0)',
+        'text_color': 'rgba(205, 214, 244, 1.0)',
+    }
 
 
 class ConfigModel(BaseModel):
@@ -27,10 +46,30 @@ class ConfigModel(BaseModel):
     layout: str = 'Blocks'
     window_width: int = 800
     window_height: int = 600
+    scroll_volume: bool = True
+    visible_categories: dict[str, bool] = Field(default_factory=_default_visible_categories)
+    theme: dict = Field(default_factory=_default_theme)
+    shortcuts: dict[str, str] = Field(default_factory=dict)
 
     @validator('layout')
     def capitalize_layout(cls, v):
         return v.capitalize()
+
+    @validator('visible_categories', always=True)
+    def ensure_visible_categories(cls, v):
+        defaults = _default_visible_categories()
+        if isinstance(v, dict):
+            for key in CATEGORY_KEYS:
+                if key in v:
+                    defaults[key] = bool(v[key])
+        return defaults
+
+    @validator('theme', always=True)
+    def ensure_theme(cls, v):
+        defaults = _default_theme()
+        if isinstance(v, dict):
+            defaults.update(v)
+        return defaults
 
     @root_validator(skip_on_failure=True)
     def heal_invariants(cls, values):

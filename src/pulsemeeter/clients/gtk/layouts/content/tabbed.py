@@ -36,13 +36,24 @@ def arrange_widgets(content):
     content.settings_box.set_vexpand(False)
 
     # TODO: set box layouts
+    content.category_containers = {}
     for device_type in ('hi', 'vi', 'a', 'b'):
-        content.device_box[device_type].set_properties(orientation=Gtk.Orientation.VERTICAL)
+        content.device_box[device_type].set_properties(
+            orientation=Gtk.Orientation.VERTICAL,
+            hexpand=True,
+            vexpand=True,
+        )
         stack.add_titled(content.device_box[device_type], device_type, PRETTY[device_type])
+        content.category_containers[device_type] = content.device_box[device_type]
 
     for app_type in ('sink_input', 'source_output'):
-        content.app_box[app_type].set_properties(orientation=Gtk.Orientation.VERTICAL)
+        content.app_box[app_type].set_properties(
+            orientation=Gtk.Orientation.VERTICAL,
+            hexpand=True,
+            vexpand=True,
+        )
         stack.add_titled(content.app_box[app_type], app_type, PRETTY[app_type])
+        content.category_containers[app_type] = content.app_box[app_type]
 
     stack.add_titled(content.settings_box, 'settings', _('Settings'))
     switcher = Gtk.StackSwitcher()
@@ -57,7 +68,7 @@ def arrange_widgets(content):
     scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
     scrolled.set_child(stack)
 
-    main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+    main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6, hexpand=True, vexpand=True)
     main_box.append(tab_bar)  # or just switcher if you don’t need scrolling
     main_box.append(scrolled)
 

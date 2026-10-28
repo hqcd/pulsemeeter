@@ -28,6 +28,7 @@ class DeviceModel(BaseModel):
     channel_list: list[str]
     connections: dict[str, dict[str, ConnectionModel]] = {'a': {}, 'b': {}}
     selected_channels: list[bool] | None
+    toggle_group_shortcut: str = ''
 
     # Transient runtime status (not persisted).
     # init_failed/init_error: hard error (e.g. pw-cli failed to create) - UI shows warning.
@@ -120,7 +121,14 @@ class DeviceModel(BaseModel):
         '''
         Update device settings
         '''
-        self.__dict__.update(device)
+        output_visibility = device.get('output_visibility', {})
+        exclusive_virtual_outputs = device.get('exclusive_virtual_outputs', {})
+
+        filtered = {
+            k: v for k, v in device.items()
+            if k not in ('output_visibility', 'exclusive_virtual_outputs')
+        }
+        self.__dict__.update(filtered)
         self.name = device['name']
         self.description = device['description']
         self.nick = device['nick']
@@ -128,6 +136,20 @@ class DeviceModel(BaseModel):
         self.external = device['external']
         self.channel_list = device['channel_list']
         self.selected_channels = device['selected_channels']
+        if 'toggle_group_shortcut' in device:
+            self.toggle_group_shortcut = device['toggle_group_shortcut']
+
+        for key_str, is_visible in output_visibility.items():
+            out_type, _, out_id = key_str.partition(':')
+            conn = self.connections.get(out_type, {}).get(out_id)
+            if conn is not None:
+                conn.hidden = not bool(is_visible)
+
+        for out_id, is_excl in exclusive_virtual_outputs.items():
+            conn = self.connections.get('b', {}).get(out_id)
+            if conn is not None:
+                conn.exclusive_source = bool(is_excl)
+
         return 0
 
     def set_mute(self, state: bool, emit: bool = True):

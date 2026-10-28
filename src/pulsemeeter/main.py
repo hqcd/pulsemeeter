@@ -50,7 +50,8 @@ def primary(device_type, device_id):
     config_persistence = ConfigPersistence(ConfigModel, CONFIG_FILE)
     device_repository = DeviceRepository(config_persistence)
     device_controller = DeviceController(device_repository=device_repository)
-    device_controller.device_manager.set_primary(device_type, device_id)
+    device_controller.set_primary(device_type, device_id)
+    config_persistence.save()
 
 
 def connect(input_type, input_id, output_type, output_id, state):
@@ -58,6 +59,15 @@ def connect(input_type, input_id, output_type, output_id, state):
     device_repository = DeviceRepository(config_persistence)
     device_controller = DeviceController(device_repository=device_repository)
     device_controller.set_connection(input_type, input_id, output_type, output_id, state)
+    config_persistence.save()
+
+
+def toggle_group(input_type, input_id):
+    config_persistence = ConfigPersistence(ConfigModel, CONFIG_FILE)
+    device_repository = DeviceRepository(config_persistence)
+    device_controller = DeviceController(device_repository=device_repository)
+    device_controller.cycle_toggle_group(input_type, input_id)
+    config_persistence.save()
 
 
 def main():
@@ -69,7 +79,8 @@ def main():
         'mute': mute,
         'volume': volume,
         'primary': primary,
-        'connect': connect
+        'connect': connect,
+        'toggle-group': toggle_group,
     }
 
     parsed = parse_args()

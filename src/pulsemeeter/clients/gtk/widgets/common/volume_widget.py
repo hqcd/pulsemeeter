@@ -11,6 +11,8 @@ _ = gettext.gettext
 
 class VolumeWidget(Gtk.Scale):
 
+    scroll_enabled: bool = True
+
     __gsignals__ = {
         'volume': (GObject.SignalFlags.RUN_FIRST, GObject.TYPE_NONE, (int,)),
     }
@@ -46,7 +48,8 @@ class VolumeWidget(Gtk.Scale):
     def _setup_gesture_controllers(self):
         '''Setup gesture controllers for GTK 4 event handling'''
         # Scroll controller
-        scroll_controller = Gtk.EventControllerScroll()
+        scroll_controller = Gtk.EventControllerScroll.new(Gtk.EventControllerScrollFlags.BOTH_AXES)
+        scroll_controller.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
         scroll_controller.connect('scroll', self._on_scroll_event)
         self.add_controller(scroll_controller)
 
@@ -64,6 +67,9 @@ class VolumeWidget(Gtk.Scale):
         gesture.connect('released', self._on_button_release)
 
     def _on_scroll_event(self, controller, dx, dy):
+        if not self.scroll_enabled:
+            return True
+
         if self.is_pressed is True:
             return True
 

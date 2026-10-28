@@ -13,7 +13,7 @@ from pulsemeeter.clients.gtk.widgets.popovers.device_settings_popover import Dev
 # pylint: disable=wrong-import-order,wrong-import-position
 import gi
 gi.require_version('Gtk', '4.0')
-from gi.repository import GObject, Gtk  # noqa: E402
+from gi.repository import GLib, GObject, Gtk, Pango  # noqa: E402
 # pylint: enable=wrong-import-order,wrong-import-position
 
 _ = gettext.gettext
@@ -37,6 +37,7 @@ class DeviceWidget(Gtk.Frame):
 
     def __init__(self, model: DeviceModel, layout_style='bars'):
         super().__init__()
+        self.set_hexpand(True)
         self.get_style_context().add_class('device-frame')
         self.handlers = {}
         self.device_model = model
@@ -46,10 +47,16 @@ class DeviceWidget(Gtk.Frame):
 
     def _create_widgets(self, model):
         self.nick_label = Gtk.Label()
-        self.nick_label.set_markup(f'<b>{self.device_model.nick}</b>')
+        self.nick_label.set_markup(f'<b>{GLib.markup_escape_text(self.device_model.nick)}</b>')
+        self.nick_label.set_wrap(True)
+        self.nick_label.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
         self.description_label = Gtk.Label(label=self.device_model.description)
+        self.description_label.set_wrap(True)
+        self.description_label.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
         self.description_label.set_visible(self.device_model.nick != self.device_model.description)
         self.name_label = Gtk.Label(label=self.device_model.name)
+        self.name_label.set_wrap(True)
+        self.name_label.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
         # Warning icon shown when device fails to initialize
         self.warning_icon = Gtk.Image.new_from_icon_name('dialog-warning')
         self.volume_widget = VolumeWidget(value=model.volume[0], draw_value=True)
@@ -66,7 +73,10 @@ class DeviceWidget(Gtk.Frame):
         self.connections_widgets = {}
 
         if model.get_type() in ('vi', 'hi'):
-            self.connections_widgets = {'a': WidgetBox(), 'b': WidgetBox()}
+            self.connections_widgets = {
+                'a': WidgetBox(hexpand=True),
+                'b': WidgetBox(hexpand=True),
+            }
             self._create_connection_widgets()
 
         Gtk.Accessible.update_property(
@@ -106,7 +116,7 @@ class DeviceWidget(Gtk.Frame):
     def fill_settings(self):
         self.volume_widget.set_volume(self.device_model.volume[0])
         self.mute_widget.set_mute(self.device_model.mute)
-        self.nick_label.set_label(self.device_model.nick)
+        self.nick_label.set_markup(f'<b>{GLib.markup_escape_text(self.device_model.nick)}</b>')
         self.description_label.set_label(self.device_model.description)
         self.description_label.set_visible(self.device_model.nick != self.device_model.description)
         self._update_warning()
@@ -159,9 +169,10 @@ class DeviceWidget(Gtk.Frame):
     def _create_connection_widgets(self):
         # Route buttons all take the width of the widest, which grows when it shows a warning or info icon
         size_group = Gtk.SizeGroup(mode=Gtk.SizeGroupMode.HORIZONTAL)
+        input_type = self.device_model.get_type()
         for output_type in ('a', 'b'):
             for output_id, connection_schema in self.device_model.connections[output_type].items():
-                button = ConnectionWidget(connection_schema.nick, connection_schema)
+                button = ConnectionWidget(connection_schema.nick, connection_schema, input_type=input_type, output_type=output_type)
                 size_group.add_widget(button.toggle_button)
                 self.connections_widgets[output_type].add_widget(output_id, button)
                 button.connect('connection', self._on_connection_change, output_type, output_id)
@@ -208,7 +219,7 @@ class DeviceWidget(Gtk.Frame):
         self.emit('update_connection', output_type, output_id, schema)
 
         # the route was relinked with the new settings, so its warning may have changed
-        connection_widget.update_warning()
+        connection_widget.update_metadata_visuals()
         popover.refresh_status()
 
         # automatic and manual mapping tick different boxes, so the grid is rebuilt

@@ -18,7 +18,10 @@ from pulsemeeter.clients.gtk.widgets.content import Content
 from pulsemeeter.clients.gtk.widgets.device.device_widget import DeviceWidget
 from pulsemeeter.clients.gtk.widgets.app.app_widget import AppWidget
 from pulsemeeter.clients.gtk.widgets.app.app_dropdown import AppDropDown
+from pulsemeeter.clients.gtk.widgets.common.volume_widget import VolumeWidget
 from pulsemeeter.clients.gtk.widgets.welcome_window import WelcomeWindow
+from pulsemeeter.clients.gtk.theme_manager import ThemeManager
+from pulsemeeter.clients.gtk.shortcut_manager import GlobalShortcutManager
 
 # pylint: disable=wrong-import-order,wrong-import-position
 from gi import require_version as gi_require_version
@@ -90,16 +93,23 @@ class GtkController(SignalModel):
         self.window = None
         self.content = None
         self.welcome_window = None
+        self.theme_manager = ThemeManager()
+        self.shortcut_manager = GlobalShortcutManager(self.handle_shortcut_trigger)
         self.vumeter_tasks = {'a': {}, 'b': {}, 'vi': {}, 'hi': {}, 'sink_input': {}, 'source_output': {}}
         self.device_handlers = {'a': {}, 'b': {}, 'vi': {}, 'hi': {}}
         self.app_handlers = {'sink_input': {}, 'source_output': {}}
 
     def create_window(self, application):
+        VolumeWidget.scroll_enabled = getattr(self.config_model, 'scroll_volume', True)
         self.create_content(self.config_model.layout)
         self.window = Gtk.Window(title='Pulsemeeter', application=application)
         self.window.set_default_size(self.config_model.window_width, self.config_model.window_height)
         self.window.set_child(self.content)
         self.connect_window_gtk_events()
+
+        self.theme_manager.apply_theme(getattr(self.config_model, 'theme', {}))
+        self.shortcut_manager.attach_to_window(self.window)
+        self.shortcut_manager.sync_from_config(self.config_model)
 
         self.load_device_list()
         self.load_app_list()
@@ -112,6 +122,7 @@ class GtkController(SignalModel):
 
         self.connect_content_gtk_events()
         self.content.settings_box.fill_settings(self.config_model)
+        self.content.apply_category_visibility(getattr(self.config_model, 'visible_categories', {}))
         return self.content
 
     def create_device_widget(self, device_type, device_id, device_model, refresh=False):
@@ -129,6 +140,7 @@ class GtkController(SignalModel):
 
         if refresh:
             self.reload_connection_widgets()
+            self.shortcut_manager.sync_from_config(self.config_model)
 
         return device_widget
 
@@ -144,6 +156,7 @@ class GtkController(SignalModel):
 
         if refresh:
             self.reload_connection_widgets()
+            self.shortcut_manager.sync_from_config(self.config_model)
 
         return device_widget
 
@@ -152,6 +165,7 @@ class GtkController(SignalModel):
         device_widget.fill_settings()
         self.reload_connection_widgets()
         self.append_app_combobox(device_model)
+        self.shortcut_manager.sync_from_config(self.config_model)
 
     def on_device_widget_destroy(self, _, device_type, device_id):
         self.stop_vumeter(device_type, device_id)
@@ -304,6 +318,19 @@ class GtkController(SignalModel):
         vumeters_changed = self.config_model.vumeters != config_schema['vumeters']
         self.config_model.vumeters = config_schema['vumeters']
         self.config_model.cleanup = config_schema['cleanup']
+
+        if 'scroll_volume' in config_schema:
+            self.config_model.scroll_volume = bool(config_schema['scroll_volume'])
+            VolumeWidget.scroll_enabled = self.config_model.scroll_volume
+
+        if 'visible_categories' in config_schema:
+            self.config_model.visible_categories.update(config_schema['visible_categories'])
+            self.content.apply_category_visibility(self.config_model.visible_categories)
+
+        if 'theme' in config_schema:
+            self.config_model.theme.update(config_schema['theme'])
+            self.theme_manager.apply_theme(self.config_model.theme)
+
         layout_changed = self.config_model.layout != config_schema['layout']
         self.config_model.layout = config_schema['layout']
         if layout_changed:
@@ -598,6 +625,43 @@ class GtkController(SignalModel):
         Call to device model to set model connection
         '''
         self.emit('connection_change', input_type, input_id, output_type, output_id, connection_model)
+        device_widget = self.content.device_box.get(input_type, {}).widgets.get(input_id) if self.content else None
+        if device_widget is not None:
+            conn_widget = device_widget.connections_widgets.get(output_type, {}).widgets.get(output_id)
+            if conn_widget is not None:
+                conn_widget.update_metadata_visuals()
+        self.shortcut_manager.sync_from_config(self.config_model)
+
+    def handle_shortcut_trigger(self, action_id: str):
+        '''
+        Handle a keyboard shortcut activation (either from XDG GlobalShortcuts portal or window key controller).
+        '''
+        parts = action_id.split(':')
+        if len(parts) == 5 and parts[0] == 'route':
+            _, input_type, input_id, output_type, output_id = parts
+            self.emit('connect', input_type, input_id, output_type, output_id, None)
+        elif len(parts) == 3 and parts[0] == 'toggle_group':
+            _, input_type, input_id = parts
+            self.emit('cycle_toggle_group', input_type, input_id)
+        elif len(parts) == 3 and parts[0] == 'mute':
+            _, device_type, device_id = parts
+            self.emit('mute', device_type, device_id, None)
+        return False
+
+    def connection_state_callback(self, input_type: str, input_id: str, output_type: str, output_id: str, state: bool):
+        '''
+        Sync the connection toggle button in the UI when DeviceController changes a connection
+        (e.g. via exclusive toggle group or keyboard shortcut).
+        '''
+        if self.content is None:
+            return
+        device_widget = self.content.device_box.get(input_type, {}).widgets.get(input_id)
+        if device_widget is None:
+            return
+        conn_widget = device_widget.connections_widgets.get(output_type, {}).widgets.get(output_id)
+        if conn_widget is not None:
+            conn_widget.set_connection(state)
+            conn_widget.update_warning()
 
     def device_new(self, _, device_model):
         '''

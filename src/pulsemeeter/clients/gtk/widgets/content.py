@@ -26,6 +26,8 @@ class Content(Gtk.Box):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.set_hexpand(True)
+        self.set_vexpand(True)
         self.settings_button = Gtk.MenuButton(icon_name='emblem-system-symbolic')
         self.settings_box = SettingsMenuBox()
 
@@ -38,7 +40,7 @@ class Content(Gtk.Box):
         self.create_device_button = {}
         self.device_box = {}
         for device_type in ('a', 'b', 'vi', 'hi'):
-            self.device_box[device_type] = WidgetBox()
+            self.device_box[device_type] = WidgetBox(hexpand=True, vexpand=True)
             self.create_device_button[device_type] = self._new_device_button()
             popover = DeviceSettingsPopover(device_type)
             popover.confirm_button.connect('clicked', self._on_device_create, popover)
@@ -76,7 +78,21 @@ class Content(Gtk.Box):
             ]
         )
 
-        self.app_box = {'sink_input': WidgetBox(), 'source_output': WidgetBox()}
+        self.app_box = {
+            'sink_input': WidgetBox(hexpand=True, vexpand=True),
+            'source_output': WidgetBox(hexpand=True, vexpand=True),
+        }
+        self.category_containers = {}
+
+    def apply_category_visibility(self, visible_categories: dict[str, bool]):
+        for cat_key, visible in visible_categories.items():
+            container = self.category_containers.get(cat_key)
+            if container is not None:
+                container.set_visible(bool(visible))
+            elif cat_key in self.device_box:
+                self.device_box[cat_key].set_visible(bool(visible))
+            elif cat_key in self.app_box:
+                self.app_box[cat_key].set_visible(bool(visible))
 
     def _on_device_create(self, _, popover):
         schema = popover.to_schema()

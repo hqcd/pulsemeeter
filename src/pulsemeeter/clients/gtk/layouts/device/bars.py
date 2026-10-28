@@ -20,7 +20,7 @@ def _set_properties(device_widget: DeviceWidget):
         'vexpand': True,
         'hexpand': False,
         'inverted': True,
-        'height_request': 200,
+        'height_request': 100,
     }
 
     device_widget.edit_button.set_properties(**button_props)
@@ -29,13 +29,22 @@ def _set_properties(device_widget: DeviceWidget):
     device_widget.volume_widget.set_properties(**scale_props)
     device_widget.vumeter_widget.set_properties(margin_start=10, **scale_props)
     if device_widget.device_model.get_type() in ['vi', 'hi']:
-        device_widget.connections_widgets['a'].set_properties(orientation=Gtk.Orientation.VERTICAL)
-        device_widget.connections_widgets['b'].set_properties(orientation=Gtk.Orientation.VERTICAL)
+        device_widget.connections_widgets['a'].set_properties(orientation=Gtk.Orientation.VERTICAL, hexpand=True, spacing=4)
+        device_widget.connections_widgets['b'].set_properties(orientation=Gtk.Orientation.VERTICAL, hexpand=True, spacing=4)
 
-    device_widget.set_properties(margin_top=10, margin_bottom=10, margin_start=10, margin_end=10, hexpand=False, vexpand=False)
+    device_widget.set_properties(margin_top=6, margin_bottom=6, margin_start=6, margin_end=6, hexpand=True, vexpand=True)
+    device_widget.nick_label.set_properties(
+        wrap=True,
+        wrap_mode=Pango.WrapMode.WORD_CHAR,
+        justify=Gtk.Justification.CENTER,
+        hexpand=True,
+    )
     device_widget.description_label.set_properties(
-        ellipsize=Pango.EllipsizeMode.END,
-        max_width_chars=12,
+        ellipsize=Pango.EllipsizeMode.NONE,
+        wrap=True,
+        wrap_mode=Pango.WrapMode.WORD_CHAR,
+        justify=Gtk.Justification.CENTER,
+        hexpand=True,
     )
 
     # if nick == description, don't show description
@@ -55,12 +64,12 @@ def arrange_widgets(device_widget: DeviceWidget):
     '''
     _set_properties(device_widget)
 
-    name_container = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5, halign=Gtk.Align.CENTER)
+    name_container = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5, halign=Gtk.Align.CENTER, hexpand=True)
     name_container.append(device_widget.warning_icon)
     name_container.append(device_widget.nick_label)
     name_container.append(device_widget.edit_button)
 
-    title_container = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0, halign=Gtk.Align.CENTER)
+    title_container = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2, halign=Gtk.Align.CENTER, hexpand=True)
     title_container.append(name_container)
     title_container.append(device_widget.description_label)
 
@@ -70,16 +79,18 @@ def arrange_widgets(device_widget: DeviceWidget):
     main_container = Gtk.Box(
         orientation=Gtk.Orientation.HORIZONTAL,
         halign=Gtk.Align.CENTER,
+        hexpand=True,
+        vexpand=True,
         spacing=10,
-        margin_top=10,
-        margin_bottom=10,
-        margin_start=10,
-        margin_end=10
+        margin_top=8,
+        margin_bottom=8,
+        margin_start=8,
+        margin_end=8
     )
 
     primary = device_widget.device_model.primary
     device_widget.vumeter_widget.set_vexpand(True)
-    control_grid = Gtk.Grid(row_spacing=0, column_spacing=0)
+    control_grid = Gtk.Grid(row_spacing=0, column_spacing=0, vexpand=True)
     control_grid.attach(device_widget.vumeter_widget, 0, 0, 1, 2)
     control_grid.attach(device_widget.volume_widget, 1, 0, 1, 1)
 
@@ -92,8 +103,8 @@ def arrange_widgets(device_widget: DeviceWidget):
     main_container.append(control_grid)
 
     if device_widget.device_model.get_type() in ('vi', 'hi'):
-        connections_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
-        connections_container = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
+        connections_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2, hexpand=True)
+        connections_container = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5, hexpand=True)
         connections_container.append(device_widget.connections_widgets['a'])
         connections_container.append(device_widget.connections_widgets['b'])
         connections_box.append(connections_container)

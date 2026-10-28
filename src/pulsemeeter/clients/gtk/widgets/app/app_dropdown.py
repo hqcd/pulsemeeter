@@ -3,7 +3,7 @@ import gettext
 # pylint: disable=wrong-import-order,wrong-import-position
 import gi
 gi.require_version('Gtk', '4.0')
-from gi.repository import Gtk, GObject  # noqa: E402
+from gi.repository import Gtk, GObject, Pango  # noqa: E402
 # pylint: enable=wrong-import-order,wrong-import-position
 
 _ = gettext.gettext
@@ -30,6 +30,11 @@ class AppDropDown(Gtk.DropDown):
         super().__init__(
             model=self._string_list[app_type],
         )
+        self.set_hexpand(True)
+        factory = Gtk.SignalListItemFactory()
+        factory.connect('setup', self._on_factory_setup)
+        factory.connect('bind', self._on_factory_bind)
+        self.set_factory(factory)
 
         if app_type == 'sink_input':
             accesible_description = _('Select the output device for this app')
@@ -47,6 +52,23 @@ class AppDropDown(Gtk.DropDown):
         )
 
         self.connect('notify::selected', self._on_selected)
+
+    @staticmethod
+    def _on_factory_setup(_factory, list_item):
+        label = Gtk.Label(
+            xalign=0.0,
+            wrap=True,
+            wrap_mode=Pango.WrapMode.WORD_CHAR,
+            hexpand=True,
+        )
+        list_item.set_child(label)
+
+    @staticmethod
+    def _on_factory_bind(_factory, list_item):
+        label = list_item.get_child()
+        item = list_item.get_item()
+        if label is not None and item is not None:
+            label.set_label(item.get_string())
 
     def _on_selected(self, widget, pspec):
         self.emit('changed')

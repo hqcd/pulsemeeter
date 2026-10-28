@@ -94,6 +94,7 @@ class GtkClient(Gtk.Application):
             'route_volume': self.device_controller.set_route_volume,
             'use_loopback': self.device_controller.set_use_loopback,
             'connection_change': self.device_controller.update_connection,
+            'cycle_toggle_group': self.device_controller.cycle_toggle_group,
             'device_new': self.device_controller.create_device,
             'device_remove': self.device_controller.remove_device,
             'device_change': self.device_controller.update_device,
@@ -112,6 +113,7 @@ class GtkClient(Gtk.Application):
             'device_new': self.gtk_controller.device_new_callback,
             'device_remove': self.gtk_controller.device_remove_callback,
             'device_change': self.gtk_controller.device_change_callback,
+            'connect': self.gtk_controller.connection_state_callback,
         }
 
         for signal_name, callback in signal_map.items():

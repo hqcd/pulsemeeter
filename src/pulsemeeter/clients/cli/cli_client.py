@@ -84,6 +84,11 @@ def parse_args():
     add_device_args(connect_parser, 'output')
     connect_parser.add_argument('value', type=parse_bool, nargs='?', default=None)
 
+    toggle_group_parser = subparser.add_parser(
+        'toggle-group', help='Cycle active output in the exclusive toggle group for an input device'
+    )
+    add_device_args(toggle_group_parser, 'input')
+
     parser.add_argument('-v', '--version', action='version', version=VERSION)
 
     return parser.parse_args()

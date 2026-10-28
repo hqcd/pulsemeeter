@@ -24,6 +24,10 @@ class ConnectionModel(BaseModel):
     port_map: list[list[int]] = Field(default_factory=list)
     route_volume: int = 100  # 0-153, per-route volume (only used when use_loopback=True)
     use_loopback: bool = False  # opt-in for per-route volume via pw-loopback
+    toggle_group: bool = False  # opt-in for exclusive toggle routing on this input
+    exclusive_source: bool = False  # opt-in for exclusive input routing to a virtual output (disables other hi -> this b)
+    hidden: bool = False  # hide this output from the input's routing buttons list
+    shortcut: str = ''  # keyboard shortcut accelerator (e.g. '<Control><Alt>1')
 
     # Transient runtime status, prevent saving to config
     connect_failed: bool = Field(default=False, exclude=True)

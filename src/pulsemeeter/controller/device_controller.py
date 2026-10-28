@@ -331,6 +331,38 @@ class DeviceController(SignalModel):
 
         # by soft we mean dont save to config
         if soft is False:
+            # Exclusive toggle group: if enabling an output that belongs to the toggle_group,
+            # automatically disable any other currently active toggle_group outputs on this input
+            if state is True and getattr(connection_model, 'toggle_group', False):
+                for other_out_type, out_connections in input_device.connections.items():
+                    for other_out_id, other_conn in out_connections.items():
+                        if (other_out_type, other_out_id) == (output_type, output_id):
+                            continue
+                        if getattr(other_conn, 'toggle_group', False) and other_conn.state:
+                            self.set_connection(input_type, input_id, other_out_type, other_out_id, False, soft=False)
+
+            # Exclusive virtual output routing for hardware inputs:
+            # If enabling a hardware input ('hi') to a virtual output ('b') with exclusive_source enabled,
+            # disable routing from any other hardware input to this same virtual output.
+            if state is True and input_type == 'hi' and output_type == 'b':
+                is_exclusive_src = getattr(connection_model, 'exclusive_source', False)
+                if not is_exclusive_src:
+                    for other_hi_id, other_hi in self.device_repository.get_devices_by_type('hi').items():
+                        if other_hi_id == input_id:
+                            continue
+                        other_conn = other_hi.connections.get('b', {}).get(output_id)
+                        if other_conn and getattr(other_conn, 'exclusive_source', False):
+                            is_exclusive_src = True
+                            break
+
+                if is_exclusive_src:
+                    for other_hi_id, other_hi in self.device_repository.get_devices_by_type('hi').items():
+                        if other_hi_id == input_id:
+                            continue
+                        other_conn = other_hi.connections.get('b', {}).get(output_id)
+                        if other_conn and other_conn.state:
+                            self.set_connection('hi', other_hi_id, 'b', output_id, False, soft=False)
+
             input_device.set_connection(output_type, output_id, state, emit=False)
             self.emit('connect', input_type, input_id, output_type, output_id, state)
 
@@ -609,12 +641,40 @@ class DeviceController(SignalModel):
 
         cur_connection_model.auto_ports = connection_model.auto_ports
         cur_connection_model.port_map = connection_model.port_map
+        cur_connection_model.toggle_group = getattr(connection_model, 'toggle_group', False)
+        cur_connection_model.exclusive_source = getattr(connection_model, 'exclusive_source', False)
+        cur_connection_model.hidden = getattr(connection_model, 'hidden', False)
+        cur_connection_model.shortcut = getattr(connection_model, 'shortcut', '')
 
         # Nothing is linked through the map when the route is off, and pw-loopback maps channels itself
         if not cur_connection_model.state or cur_connection_model.use_loopback:
             return
 
         self._set_link_connection(input_device, output_device, cur_connection_model, True, previous=previous)
+
+    def cycle_toggle_group(self, input_type: str, input_id: str):
+        '''
+        Cycle to the next output in the exclusive toggle group on an input device.
+        If none are currently active, activates the first toggle_group output.
+        '''
+        input_device = self.device_repository.get_device(input_type, input_id)
+        if input_device is None:
+            return None
+
+        toggle_members = []
+        for out_type in ('a', 'b'):
+            for out_id, conn in input_device.connections.get(out_type, {}).items():
+                if getattr(conn, 'toggle_group', False):
+                    toggle_members.append((out_type, out_id, conn))
+
+        if not toggle_members:
+            return None
+
+        active_idx = next((idx for idx, (_, _, c) in enumerate(toggle_members) if c.state), -1)
+        next_idx = (active_idx + 1) % len(toggle_members)
+        next_out_type, next_out_id, _ = toggle_members[next_idx]
+        self.set_connection(input_type, input_id, next_out_type, next_out_id, True, soft=False)
+        return next_out_type, next_out_id
 
     def create_connection(self, input_device, output_device):
         '''

@@ -11,7 +11,7 @@ from pulsemeeter.clients.gtk.widgets.app.app_dropdown import AppDropDown
 # pylint: disable=wrong-import-order,wrong-import-position
 import gi
 gi.require_version('Gtk', '4.0')
-from gi.repository import Gtk, GObject  # noqa: E402
+from gi.repository import GLib, Gtk, GObject, Pango  # noqa: E402
 # pylint: enable=wrong-import-order,wrong-import-position
 
 _ = gettext.gettext
@@ -31,10 +31,16 @@ class AppWidget(Gtk.Frame):
     def __init__(self, app_model: AppModel):
         self.app_model = app_model
         super().__init__()
+        self.set_hexpand(True)
+        self.add_css_class('app-frame')
 
         self.app_type = app_model.app_type
         self.label = Gtk.Label()
-        self.label.set_markup(f'<b>{self.app_model.label}</b>')
+        self.label.set_markup(f'<b>{GLib.markup_escape_text(self.app_model.label)}</b>')
+        self.label.set_wrap(True)
+        self.label.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
+        self.label.set_hexpand(True)
+        self.label.set_xalign(0.0)
         self.icon = IconWidget(app_model.icon)
         self.volume_widget = VolumeWidget(value=app_model.volume, draw_value=True)
         self.combobox = AppDropDown(app_model.app_type)
