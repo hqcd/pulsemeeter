@@ -61,7 +61,7 @@ def parse_bool(value):
 
 def parse_args():
     LOG.debug('Parsing args...')
-    parser = argparse.ArgumentParser(description='Pulsemeeter')
+    parser = argparse.ArgumentParser(description='Pulsemeeter Ex')
     subparser = parser.add_subparsers(dest='command')
 
     subparser.add_parser('init', help='INIT')

@@ -102,7 +102,7 @@ class GtkController(SignalModel):
     def create_window(self, application):
         VolumeWidget.scroll_enabled = getattr(self.config_model, 'scroll_volume', True)
         self.create_content(self.config_model.layout)
-        self.window = Gtk.Window(title='Pulsemeeter', application=application)
+        self.window = Gtk.Window(title='Pulsemeeter Ex', application=application)
         self.window.set_default_size(self.config_model.window_width, self.config_model.window_height)
         self.window.set_child(self.content)
         self.connect_window_gtk_events()

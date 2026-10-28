@@ -1,4 +1,4 @@
-# Pulsemeeter (Enhanced Fork)
+# Pulsemeeter Ex
 
 A frontend to ease the use of PulseAudio / PipeWire's routing capabilities, much like Voicemeeter's workflow — enhanced with custom theming, exclusive routing toggles, keyboard shortcuts, category visibility controls, and a responsive layout.
 

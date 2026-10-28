@@ -8,15 +8,15 @@ from gi.repository import Gtk, Gdk, GLib
 
 _ = gettext.gettext
 
-GITHUB_URL = 'https://github.com/theRealCarneiro/pulsemeeter'
+GITHUB_URL = 'https://github.com/hqcd/pulsemeeter'
 DISCORD_URL = 'https://discord.gg/ekWt9NuEWv'
 APP_ICON_NAME = 'Pulsemeeter'
 FALLBACK_ICON_NAME = 'multimedia-volume-control'
 
 GUIDE_SECTIONS = [
     (
-        _('What is Pulsemeeter?'),
-        _('Pulsemeeter is a virtual audio mixer and router built on top of PipeWire. '
+        _('What is Pulsemeeter Ex?'),
+        _('Pulsemeeter Ex is a virtual audio mixer and router built on top of PipeWire. '
           'It lets you create virtual devices and freely route audio between your '
           'inputs and outputs, controlling volume and muting along the way.')
     ),
@@ -61,7 +61,7 @@ class WelcomeWindow(Gtk.Window):
     '''
 
     def __init__(self, **kwargs):
-        super().__init__(title=_('Welcome to Pulsemeeter!'), **kwargs)
+        super().__init__(title=_('Welcome to Pulsemeeter Ex!'), **kwargs)
         self.set_default_size(560, 640)
 
         mainbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10,
@@ -108,7 +108,7 @@ class WelcomeWindow(Gtk.Window):
 
         title = Gtk.Label(halign=Gtk.Align.START)
         title.set_markup('<span size="xx-large" weight="bold">%s</span>'
-                         % GLib.markup_escape_text(_('Welcome to Pulsemeeter!')))
+                         % GLib.markup_escape_text(_('Welcome to Pulsemeeter Ex!')))
         title_box.append(title)
 
         version = Gtk.Label(halign=Gtk.Align.START)
